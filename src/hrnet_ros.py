@@ -22,11 +22,14 @@ import torch
 import torchvision
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
+from std_msgs.msg import Int16MultiArray
+from std_msgs.msg import MultiArrayDimension
 
 this_dir = os.path.dirname(__file__)
 
 def OnImage(data, args):
   img_pub = args[0]
+  info_pub = args[1]
   
   bridge = CvBridge()
   cv_image = bridge.imgmsg_to_cv2(data,"bgr8")
@@ -49,13 +52,47 @@ def OnImage(data, args):
     tags = tags[0].unsqueeze(4)
     grouped, scores = parser.parse(heatmaps[0], tags, cfg['TEST']['ADJUST'], cfg['TEST']['REFINE'])
     
-    final_image = show_image(cv_image, grouped[0])
-    
+  num_people = len(grouped[0])
+  
+  for i in reversed(range(num_people)):
+    if scores[i] < 0.2:
+      scores.pop(i)
+      grouped[0] = np.delete(grouped[0],i,0)
+
+  final_image = show_image(cv_image, grouped[0])
+
+  #show image
   cv2.imshow("image",final_image)
   cv2.waitKey(3)
 
+  #publish image
   final_image = bridge.cv2_to_imgmsg(final_image,"bgr8")
   img_pub.publish(final_image)
+  
+  if len(scores)==0:
+    keypoints = []
+  else:
+    keypoints = np.delete(grouped[0],[2,3],2).flatten().tolist()
+
+  #publish image info
+  img_info = Int16MultiArray()
+  
+  img_info.layout.dim = []
+  for i in range(3):
+    img_info.layout.dim.append(MultiArrayDimension())
+  img_info.layout.dim[0].label = "people"
+  img_info.layout.dim[0].size = len(scores)
+  img_info.layout.dim[0].stride = 2*17
+  img_info.layout.dim[1].label = "keypoints"
+  img_info.layout.dim[1].size = 17
+  img_info.layout.dim[1].stride = 2
+  img_info.layout.dim[2].label = "xy"
+  img_info.layout.dim[2].size = 2
+  img_info.layout.dim[2].stride = 1
+ 
+  img_info.data = keypoints
+
+  info_pub.publish(img_info)
 
 
 def load_config(config_file):
@@ -84,8 +121,8 @@ if __name__ == '__main__':
   main()
 
   img_pub = rospy.Publisher('/hrnet_image',Image,queue_size=1)
-  #info_pub = rospy.Publisher('/hrnet_info',Marker,queue_size=1)
+  info_pub = rospy.Publisher('/hrnet_info',Int16MultiArray,queue_size=1)
 
-  rospy.Subscriber("/rrbot/camera1/image_raw",Image,OnImage, [img_pub])
+  rospy.Subscriber("/rrbot/camera1/image_raw",Image,OnImage, [img_pub,info_pub])
 
   rospy.spin()
