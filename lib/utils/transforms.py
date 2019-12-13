@@ -66,7 +66,7 @@ def get_affine_transform(center,
         print(scale)
         scale = np.array([scale, scale])
 
-    scale_tmp = scale * 200.0
+    scale_tmp = scale
     src_w = scale_tmp[0]
     dst_w = output_size[0]
     dst_h = output_size[1]

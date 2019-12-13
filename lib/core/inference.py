@@ -86,14 +86,14 @@ def get_multi_stage_outputs(
                 align_corners=False
             )
 
-        offset_feat = cfg.DATASET.NUM_JOINTS \
-            if cfg.LOSS.WITH_HEATMAPS_LOSS[i] else 0
+        offset_feat = cfg['DATASET']['NUM_JOINTS'] \
+            if cfg['LOSS']['WITH_HEATMAPS_LOSS'][i] else 0
 
-        if cfg.LOSS.WITH_HEATMAPS_LOSS[i] and cfg.TEST.WITH_HEATMAPS[i]:
-            heatmaps_avg += output[:, :cfg.DATASET.NUM_JOINTS]
+        if cfg['LOSS']['WITH_HEATMAPS_LOSS'][i] and cfg['TEST']['WITH_HEATMAPS'][i]:
+            heatmaps_avg += output[:, :cfg['DATASET']['NUM_JOINTS']]
             num_heatmaps += 1
 
-        if cfg.LOSS.WITH_AE_LOSS[i] and cfg.TEST.WITH_AE[i]:
+        if cfg['LOSS']['WITH_AE_LOSS'][i] and cfg['TEST']['WITH_AE'][i]:
             tags.append(output[:, offset_feat:])
 
     if num_heatmaps > 0:
@@ -101,7 +101,7 @@ def get_multi_stage_outputs(
 
     if with_flip:
         flip_index = FLIP_CONFIG['COCO_WITH_CENTER'] \
-            if cfg.DATASET.WITH_CENTER else FLIP_CONFIG['COCO']
+            if cfg['DATASET']['WITH_CENTER'] else FLIP_CONFIG['COCO']
 
         heatmaps_avg = 0
         num_heatmaps = 0
@@ -118,22 +118,22 @@ def get_multi_stage_outputs(
             output = torch.flip(output, [3])
             outputs.append(output)
 
-            offset_feat = cfg.DATASET.NUM_JOINTS \
-                if cfg.LOSS.WITH_HEATMAPS_LOSS[i] else 0
+            offset_feat = cfg['DATASET']['NUM_JOINTS'] \
+                if cfg['LOSS']['WITH_HEATMAPS_LOSS'][i] else 0
 
-            if cfg.LOSS.WITH_HEATMAPS_LOSS[i] and cfg.TEST.WITH_HEATMAPS[i]:
+            if cfg['LOSS']['WITH_HEATMAPS_LOSS'][i] and cfg['TEST']['WITH_HEATMAPS'][i]:
                 heatmaps_avg += \
-                    output[:, :cfg.DATASET.NUM_JOINTS][:, flip_index, :, :]
+                    output[:, :cfg['DATASET']['NUM_JOINTS']][:, flip_index, :, :]
                 num_heatmaps += 1
 
-            if cfg.LOSS.WITH_AE_LOSS[i] and cfg.TEST.WITH_AE[i]:
+            if cfg['LOSS']['WITH_AE_LOSS'][i] and cfg['TEST']['WITH_AE'][i]:
                 tags.append(output[:, offset_feat:])
-                if cfg.MODEL.TAG_PER_JOINT:
+                if cfg['MODEL']['TAG_PER_JOINT']:
                     tags[-1] = tags[-1][:, flip_index, :, :]
 
         heatmaps.append(heatmaps_avg/num_heatmaps)
 
-    if cfg.DATASET.WITH_CENTER and cfg.TEST.IGNORE_CENTER:
+    if cfg['DATASET']['WITH_CENTER'] and cfg['TEST']['IGNORE_CENTER']:
         heatmaps = [hms[:, :-1] for hms in heatmaps]
         tags = [tms[:, :-1] for tms in tags]
 
@@ -164,8 +164,8 @@ def get_multi_stage_outputs(
 def aggregate_results(
         cfg, scale_factor, final_heatmaps, tags_list, heatmaps, tags
 ):
-    if scale_factor == 1 or len(cfg.TEST.SCALE_FACTOR) == 1:
-        if final_heatmaps is not None and not cfg.TEST.PROJECT2IMAGE:
+    if scale_factor == 1 or len(cfg['TEST']['SCALE_FACTOR']) == 1:
+        if final_heatmaps is not None and not cfg['TEST']['PROJECT2IMAGE']:
             tags = [
                 torch.nn.functional.interpolate(
                     tms,
@@ -178,7 +178,7 @@ def aggregate_results(
         for tms in tags:
             tags_list.append(torch.unsqueeze(tms, dim=4))
 
-    heatmaps_avg = (heatmaps[0] + heatmaps[1])/2.0 if cfg.TEST.FLIP_TEST \
+    heatmaps_avg = (heatmaps[0] + heatmaps[1])/2.0 if cfg['TEST']['FLIP_TEST'] \
         else heatmaps[0]
 
     if final_heatmaps is None:

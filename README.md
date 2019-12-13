@@ -47,7 +47,7 @@ Bottom-up multi-person pose estimation methods have difficulties in predicting t
 *Note: \* indicates using refinement.*
 
 ## Environment
-The code is developed using python 3.6 on Ubuntu 16.04. NVIDIA GPUs are needed. The code is developed and tested using 4 NVIDIA P100 GPU cards. Other platforms or GPU cards are not fully tested.
+The code is developed using python 2.7 on Ubuntu 18.04. NVIDIA GPUs are needed. The code is developed and tested using 4 NVIDIA P100 GPU cards. Other platforms or GPU cards are not fully tested.
 
 ## Quick start
 ### Installation
@@ -67,7 +67,7 @@ The code is developed using python 3.6 on Ubuntu 16.04. NVIDIA GPUs are needed. 
    make install
    # Alternatively, if you do not have permissions or prefer
    # not to install the COCO API into global site-packages
-   python3 setup.py install --user
+   python setup.py install --user
    ```
    Note that instructions like # COCOAPI=/path/to/install/cocoapi indicate that you should pick a path where you'd like to have the software cloned and then set an environment variable (COCOAPI in this case) accordingly.
 5. Init output(training model output directory) and log(tensorboard log directory) directory:

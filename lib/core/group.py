@@ -98,18 +98,18 @@ def match_by_tag(inp, params):
 
 class Params(object):
     def __init__(self, cfg):
-        self.num_joints = cfg.DATASET.NUM_JOINTS
-        self.max_num_people = cfg.DATASET.MAX_NUM_PEOPLE
+        self.num_joints = cfg['DATASET']['NUM_JOINTS']
+        self.max_num_people = cfg['DATASET']['MAX_NUM_PEOPLE']
 
-        self.detection_threshold = cfg.TEST.DETECTION_THRESHOLD
-        self.tag_threshold = cfg.TEST.TAG_THRESHOLD
-        self.use_detection_val = cfg.TEST.USE_DETECTION_VAL
-        self.ignore_too_much = cfg.TEST.IGNORE_TOO_MUCH
+        self.detection_threshold = cfg['TEST']['DETECTION_THRESHOLD']
+        self.tag_threshold = cfg['TEST']['TAG_THRESHOLD']
+        self.use_detection_val = cfg['TEST']['USE_DETECTION_VAL']
+        self.ignore_too_much = cfg['TEST']['IGNORE_TOO_MUCH']
 
-        if cfg.DATASET.WITH_CENTER and cfg.TEST.IGNORE_CENTER:
+        if cfg['DATASET']['WITH_CENTER'] and cfg['TEST']['IGNORE_CENTER']:
             self.num_joints -= 1
 
-        if cfg.DATASET.WITH_CENTER and not cfg.TEST.IGNORE_CENTER:
+        if cfg['DATASET']['WITH_CENTER'] and not cfg['TEST']['IGNORE_CENTER']:
             self.joint_order = [
                 i-1 for i in [18, 1, 2, 3, 4, 5, 6, 7, 12, 13, 8, 9, 10, 11, 14, 15, 16, 17]
             ]
@@ -122,9 +122,9 @@ class Params(object):
 class HeatmapParser(object):
     def __init__(self, cfg):
         self.params = Params(cfg)
-        self.tag_per_joint = cfg.MODEL.TAG_PER_JOINT
+        self.tag_per_joint = cfg['MODEL']['TAG_PER_JOINT']
         self.pool = torch.nn.MaxPool2d(
-            cfg.TEST.NMS_KERNEL, 1, cfg.TEST.NMS_PADDING
+            cfg['TEST']['NMS_KERNEL'], 1, cfg['TEST']['NMS_PADDING']
         )
 
     def nms(self, det):

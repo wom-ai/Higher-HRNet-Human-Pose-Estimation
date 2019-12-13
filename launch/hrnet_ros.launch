@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="hrnet_ros" name="hrnet_ros" type="hrnet_ros.py" output="screen" />
+
+</launch>
+
+
